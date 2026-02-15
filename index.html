@@ -2,76 +2,79 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Earnings Counter</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 20px;
-            background-color: #f4f4f4;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .container {
-            max-width: 600px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-        input[type="number"] {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #5cb85c;
-            border: none;
-            color: white;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #4cae4c;
-        }
-        .result {
-            margin-top: 20px;
-            font-size: 20px;
-            color: #333;
-            text-align: center;
-        }
+        body { text-align: center; font-family: Arial, sans-serif; }
+        .earnings-display { font-size: 48px; margin: 20px; }
+        input, select { font-size: 20px; margin: 10px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Earnings Counter</h1>
-        <label for="earningsInput">Enter your earnings:</label>
-        <input type="number" id="earningsInput" placeholder="Earnings amount">
-        <button id="calculateBtn">Calculate</button>
-        <div class="result" id="resultDisplay"></div>
-    </div>
+    <h1>Earnings Counter App</h1>
+    <input type="number" id="hourlyWage" placeholder="Enter Hourly Wage" />
+    <select id="payMultiplier">
+        <option value="1">1x</option>
+        <option value="1.5">1.5x</option>
+        <option value="2">2x</option>
+    </select>
+    <div class="earnings-display" id="earningsDisplay">$0.00</div>
+    <button id="startButton">Start</button>
+    <button id="stopButton">Stop</button>
+    <button id="restartButton">Restart</button>
+
     <script>
-        document.getElementById('calculateBtn').addEventListener('click', function() {
-            const earnings = parseFloat(document.getElementById('earningsInput').value);
-            if (!isNaN(earnings)) {
-                const result = `Your earnings are: $${earnings.toFixed(2)}`;
-                document.getElementById('resultDisplay').innerText = result;
-            } else {
-                document.getElementById('resultDisplay').innerText = 'Please enter a valid number.';
+        let interval;
+        let totalEarnings = 0;
+        let running = false;
+
+        const earningsDisplay = document.getElementById('earningsDisplay');
+        const hourlyWageInput = document.getElementById('hourlyWage');
+        const payMultiplierSelect = document.getElementById('payMultiplier');
+
+        function updateDisplay() {
+            earningsDisplay.textContent = `$${totalEarnings.toFixed(2)}`;
+        }
+
+        function startCounting() {
+            if (running) return;
+            const hourlyWage = parseFloat(hourlyWageInput.value);
+            const payMultiplier = parseFloat(payMultiplierSelect.value);
+
+            if (isNaN(hourlyWage) || hourlyWage < 0) {
+                alert('Please enter a valid hourly wage.');
+                return;
             }
-        });
+
+            running = true;
+            hourlyWageInput.disabled = true;
+            payMultiplierSelect.disabled = true;
+
+            const earningsPerSecond = (hourlyWage * payMultiplier) / 3600;
+
+            interval = setInterval(() => {
+                totalEarnings += earningsPerSecond;
+                updateDisplay();
+            }, 1000);
+        }
+
+        function stopCounting() {
+            if (!running) return;
+            clearInterval(interval);
+            running = false;
+        }
+
+        function restartCounting() {
+            stopCounting();
+            totalEarnings = 0;
+            updateDisplay();
+            hourlyWageInput.disabled = false;
+            payMultiplierSelect.disabled = false;
+        }
+
+        document.getElementById('startButton').addEventListener('click', startCounting);
+        document.getElementById('stopButton').addEventListener('click', stopCounting);
+        document.getElementById('restartButton').addEventListener('click', restartCounting);
     </script>
 </body>
 </html>
